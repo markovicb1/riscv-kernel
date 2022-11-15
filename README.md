@@ -100,5 +100,124 @@ C API provides classical, procedural programming interface of system calls in C 
 
 Special function code is also 0x25 when processor enters the system mode.
 
+## C++ Aplication Programming Interface - C++ API
+
+C++ API is a layer above the C API. It provides object oriented programming interface for Threads and Semaphores, as well as OOP C++ dynamic memory managment.
+
+Threads:
+```C++
+class Thread{
+public:
+    Thread(void (*body)(void*),void* arg);
+    virtual ~Thread(){}
+
+    int start();
+    static void dispatch();
+protected:
+    Thread();
+    virtual void run(){}
+};
+```
+Thread class supports 2 ways of creating Threads: 
+- POSIX way: creating thread also starts it
+- Object oriented way: thread starts with start() method
+
+Semaphores:
+```C++
+class Semaphore{
+public:
+    Semaphore(uint init = 1);
+    virtual ~Semaphore(){}
+    int wait();
+    int signal();
+};
+```
+
+## Threads implementation
+
+The core functionality of threads is behind the internal class called TCB. TCB stands for Thread Controll Block and works together with System Scheduler.
+
+### Scheduler
+
+Scheduler is implemented as Singleton[^2] class for scheduling of active threads.
+It is made of dynamic list seen as Queue for ready threads. It uses 2 simple methods: get and put, which dynamicly unblock/block threads. Scheduler uses FIFO algorithm.
+
+### TCB
+
+TCB provides different static and non-static methods necessary for thread creation, deletion and watch:
+
+- TCB(Body body, uint64 timeSlice, void * args) -> makes active thread with corresponding function body and its arguments, as well as timeSlice[^3], and puts it in the Scheduler
+- createThreadNonScheduler(Body body, void *args) -> does the same job as previous constructor without puting thread in Scheduler. This is used for semaphores
+- yield() -> change of processors context on request. Scheduler puts current thread in, and chooses new one according to FIFO algorithm
+- isFinished()
+- setFinished(bool value)
+- getTimeSlice()
+
+TCB tracks which thread is current. Context change is completly processed in assembly block.
+
+## Semaphores implementation
+
+The core functionality of semaphores is behind the internal class called ksempaphore.
+
+Sempahores in this kernel work as expected: there are simple methods for signal and wait. Each semaphore has its own queue for blocked threads.
+
+## Differences between the modes
+
+There are 3 modes in RISC-V, though only 2 are used in this kernel:
+- User mode / Unprivileged regime
+- System mode / Privileged regime
+
+While System mode has permission to access every register and use every instruction in processor, User mode is restricted. The kernel is entirely made to be run in system mode, as well as the main method.
+
+For that reason, userMain method is made and set in different source file. User mode for userMain is prepared in main method so all the threads made in userMain can run in Unprivileged regime, and main method remain as priviliged one.
+
+When all unprivileged threads from userMain are finished, userMain finishes and changes context to main method, which terminates the whole kernel.
+
+## Want to see more?
+
+The whole text project is available in serbian langauge on courses [website](http://os.etf.rs/OS1/index.htm) in section Project.
+
+It is recommended to understand basic terms and concepts used in this project, such as:
+- Memory managment and organisation
+- Basics of assembly for RISC-V (available in documentation previously mentioned)
+- Processes and threads
+- Process sync using Semaphores
+
+If you are not fammiliar with any of these terms, feel free to search for it on sites such as [geeksforgeeks](https://www.geeksforgeeks.org/) or youtube. There are also free courses over the web so search for them too.
+
+# Prepare project for use
+
+1. Get CLion as it is shown that this IDE works great with qemu emulator and xv6 OS
+2. Install these Linux packages:
+
+- build-essential
+- qemu-system-misc
+- gcc-riscv64-linux-gnu
+- binutils-riscv64-linux-gnu
+- gdb-multiarch
+- g++-riscv64-linux-gnu
+
+3. Get the project using `git clone https://github.com/markovicb1/riscv-kernel.git`. Open the folder in CLion
+4. There are several make commands:
+
+- make qemu -> used to start the kernel
+- make qemu-gdb -> used for debugging (uses GNU debugger)
+- make all -> used to compile project, produces kernel.asm
+- make clean -> cleans result of make all and several extra files
+
+For the first time, the order should be: clean->all->qemu
+
+5. In order to run particular test, such as C Threads test, corresponding method in userMain should be decommented.
+
+# Future changes :exclamation:
+
+Even though the project works well, it is always under construction. There are several things intended to be done in near future:
+
+- Asynchronous context change on whichever interrupt
+- Console support (HW interrupts)
+- Change Scheduler algorithm from FIFO to somthing better
+- ...
 
 [^1]: RISC-V ISA Assembly guide as well as other important staff are available in projects official documentation [here](https://riscv.org/technical/specifications/), ISA Specification
+[^2]: A class that cannot be instatiated. It uses static methods since it doesn't make objects. It is considered as servise class
+[^3]: Unfortunately, current version of kernel doesn't support sleeping threads, so timeSlice doesn't play a big role
