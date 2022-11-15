@@ -28,7 +28,7 @@ Kernel supports 3 different layers connected to users app:
 - C Application Programming Interface / C API
 - C++ Application Programming Interface / C++ API
 
-![gtv](https://user-images.githubusercontent.com/115867204/201788720-e1cd77fc-ed25-4e16-a2bf-0a2fe7487f8a.jpg)
+![Hijerarhija](https://user-images.githubusercontent.com/115867204/201788720-e1cd77fc-ed25-4e16-a2bf-0a2fe7487f8a.jpg)
 
 ## Application Binary Interface - ABI
 
@@ -79,7 +79,7 @@ Every computer system has SW and HW interrupts, as a way to do various different
 
 More on Computer interrupts can be read [here](https://en.wikipedia.org/wiki/Interrupt)
 
-## C Aplication Programming Interface - C API
+## C Application Programming Interface - C API
 
 C API is a layer above the ABI. It consists of the classic methods as wrappers of ABI methods, making it an ABI wrapper.
 
@@ -100,7 +100,7 @@ C API provides classical, procedural programming interface of system calls in C 
 
 Special function code is also 0x25 when processor enters the system mode.
 
-## C++ Aplication Programming Interface - C++ API
+## C++ Application Programming Interface - C++ API
 
 C++ API is a layer above the C API. It provides object oriented programming interface for Threads and Semaphores, as well as OOP C++ dynamic memory managment.
 
@@ -216,6 +216,7 @@ Even though the project works well, it is always under construction. There are s
 - Asynchronous context change on whichever interrupt
 - Console support (HW interrupts)
 - Change Scheduler algorithm from FIFO to somthing better
+- Solve grammar errors in README.md
 - ...
 
 [^1]: RISC-V ISA Assembly guide as well as other important staff are available in projects official documentation [here](https://riscv.org/technical/specifications/), ISA Specification
